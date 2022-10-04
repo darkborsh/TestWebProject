@@ -1,15 +1,15 @@
 <template>
-  <hello-world />
+  <user-list/>
 </template>
 
 <script>
-  import HelloWorld from '../components/HelloWorld'
+  import UserList from '../components/UserList'
 
   export default {
     name: 'Home',
 
     components: {
-      HelloWorld,
+      UserList
     },
   }
 </script>
