@@ -10,7 +10,7 @@
           v-for="emp in emps"
         >
           <v-list-item-content>
-            <v-list-item-title v-text="emp.text"></v-list-item-title>
+            <v-list-item-title v-text="getSurnameWithInits(emp)"></v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list-item-group>
@@ -23,24 +23,22 @@ export default {
   name: "UserList",
   data: () => ({
     selectedItem: 0,
-    emp: {
-      "fio": null,
-      "pass_ser": null,
-      "pass_no": null,
-      "pass_dt": null
-    },
     emps: [
-      { text: 'Real-Time' },
-      { text: 'Audience' },
-      { text: 'Conversions' },
-      { text: 'Real-Time' },
-      { text: 'Audience' },
-      { text: 'Conversions' },
-      { text: 'Real-Time' },
-      { text: 'Audience' },
-      { text: 'Conversions' },
+      { fio: 'Real Time Ni' }
     ],
   }),
+
+  methods: {
+    getSurnameWithInits(emp) {
+      let splitedFio = emp.fio.split(" ")
+      if (splitedFio.length === 3) {
+        return splitedFio[0] + ' ' + splitedFio[1].charAt(0) + '.' + ' ' + splitedFio[2].charAt(0) + '.'
+      } else {
+        console.log("Wrong Fio parameters" + emp.fio)
+        this.selectedItem = null
+      }
+    },
+  }
 }
 </script>
 
