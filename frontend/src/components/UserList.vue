@@ -104,13 +104,14 @@
               <v-btn
                   color="blue darken-1"
                   text
-                  @click="rejectDialog"
+                  @click="clearDialog"
               >
                 Отмена
               </v-btn>
               <v-btn
                   color="blue darken-1"
                   text
+                  @click="saveEmployee"
               >
                 Сохранить
               </v-btn>
@@ -142,6 +143,7 @@
 export default {
   name: "UserList",
   data: () => ({
+    keyStorage: "empStorage",
     initialDate: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
     typedFio: null,
     typedPassSeria: null,
@@ -163,18 +165,19 @@ export default {
     ],
     addEmplDialog: false,
     selectedItem: 0,
-    emps: [
-      { fio: "Толстой Лев Николаевич" },
-      { fio: "Толстой Лев Николаевич" },
-      { fio: "Толстой Лев Николаевич" },
-      { fio: "Толстой Лев Николаевич" },
-      { fio: "Толстой Лев Николаевич" },
-    ],
+    emps: [],
   }),
 
+  created() {
+    if (localStorage.getItem(this.keyStorage) === null) {
+      localStorage.setItem(this.keyStorage, JSON.stringify(this.emps))
+    } else {
+      this.emps = JSON.parse(localStorage.getItem(this.keyStorage))
+    }
+  },
+
   methods: {
-    rejectDialog() {
-      console.log(this.date)
+    clearDialog() {
       this.addEmplDialog = false
       //selecting all empInput for clearing input forms
       for (let [key, value] of Object.entries(this.$refs)) {
@@ -192,6 +195,24 @@ export default {
       } else {
         console.log("Wrong Fio parameters: " + emp.fio)
         this.selectedItem = null
+      }
+    },
+
+    saveEmployee() {
+      let correctFio = this.typedFio !== null && this.$refs.empInput1.validate()
+      let correctPassSeria = this.typedPassSeria !== null && this.$refs.empInput2.validate()
+      let correctPassNo = this.typedPassNo !== null && this.$refs.empInput3.validate()
+      if (correctFio && correctPassSeria && correctPassNo) {
+        this.emps.push({
+          fio: this.typedFio,
+          passSeria: this.typedPassSeria,
+          passNo: this.typedPassNo,
+          passDate: this.date
+        })
+        localStorage.setItem(this.keyStorage, JSON.stringify(this.emps))
+        this.clearDialog()
+      } else {
+        console.log("Wrong saving employee data: " + this.typedFio + " " + this.typedPassNo + " " + this.typedPassSeria)
       }
     }
   }
