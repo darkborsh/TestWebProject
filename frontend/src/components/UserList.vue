@@ -3,12 +3,97 @@
     <v-list>
       <v-subheader style="font-size: 1.2rem; font-weight: bold; user-select: none">Список сотрудников</v-subheader>
       <v-subheader>
-        <v-btn
-            color="primary"
-            dark
+        <v-dialog
+            v-model="addEmplDialog"
+            persistent
+            max-width="35%"
         >
-          Добавить сотрудника
-        </v-btn>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+                color="primary"
+                dark
+                v-bind="attrs"
+                v-on="on"
+            >
+              Добавить сотрудника
+            </v-btn>
+          </template>
+          <v-card>
+            <v-card-title>
+              <span class="text-h5">Профиль сотрудника</span>
+            </v-card-title>
+            <v-card-text>
+              <v-container>
+                <v-row>
+                  <v-col cols="12">
+                    <v-text-field
+                        v-model="typedFio"
+                        label="ФИО (полностью)*"
+                        :rules="fioRule"
+                        ref="empInput1"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="6">
+                    <v-text-field
+                        v-model="typedPassSeria"
+                        label="Серия паспорта*"
+                        :rules="passSeriaRule"
+                        ref="empInput2"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" sm="6">
+                    <v-text-field
+                        v-model="typedPassNo"
+                        label="Номер паспорта*"
+                        :rules="passNoRule"
+                        ref="empInput3"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                      cols="12"
+                      sm="3"
+                  >
+                    <v-text-field
+                        label="День*"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                      cols="12"
+                      sm="3"
+                  >
+                    <v-text-field
+                        label="Месяц*"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                      cols="12"
+                      sm="3"
+                  >
+                    <v-text-field
+                        label="Год*"
+                    ></v-text-field>
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                  color="blue darken-1"
+                  text
+                  @click="rejectDialog"
+              >
+                Отмена
+              </v-btn>
+              <v-btn
+                  color="blue darken-1"
+                  text
+              >
+                Сохранить
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-subheader>
       <v-list-item-group
         v-model="selectedItem"
@@ -19,7 +104,10 @@
           v-for="emp in emps"
         >
           <v-list-item-content>
-            <v-list-item-title v-text="getSurnameWithInits(emp)"></v-list-item-title>
+            <v-list-item-title
+                v-text="getSurnameWithInits(emp)"
+            >
+            </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list-item-group>
@@ -31,13 +119,43 @@
 export default {
   name: "UserList",
   data: () => ({
+    typedFio: null,
+    typedPassSeria: null,
+    typedPassNo: null,
+    fioRule: [
+      v => !!v || "Это поле обязательно",
+      v => ( v && v.trim().split(" ").length === 3 ) || "ФИО должно быть написано корректно"
+    ],
+    passSeriaRule: [
+      v => !!v || "Это поле обязательно",
+      v => ( v && new RegExp("^\\d{4}$").test(v) ) || "Серия паспорта должна содержать 4 цифры"
+    ],
+    passNoRule: [
+      v => !!v || "Это поле обязательно",
+      v => ( v && new RegExp("^\\d{6}$").test(v) ) || "Номер паспорта должен содержать 6 цифр"
+    ],
+    addEmplDialog: false,
     selectedItem: 0,
     emps: [
-      {fio: "Толстой Лев Николаевич"},
+      { fio: "Толстой Лев Николаевич" },
+      { fio: "Толстой Лев Николаевич" },
+      { fio: "Толстой Лев Николаевич" },
+      { fio: "Толстой Лев Николаевич" },
+      { fio: "Толстой Лев Николаевич" },
     ],
   }),
 
   methods: {
+    rejectDialog() {
+      //selecting all empInput for clearing input forms
+      for (let [key, value] of Object.entries(this.$refs)) {
+        if (/^empInput/.test(key)) {
+          value.reset()
+        }
+      }
+      this.addEmplDialog = false
+    },
+
     getSurnameWithInits(emp) {
       let splitedFio = emp.fio.split(" ")
       if (splitedFio.length === 3) {
@@ -46,7 +164,7 @@ export default {
         console.log("Wrong Fio parameters: " + emp.fio)
         this.selectedItem = null
       }
-    },
+    }
   }
 }
 </script>
