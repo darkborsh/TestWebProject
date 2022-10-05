@@ -51,27 +51,50 @@
                   </v-col>
                   <v-col
                       cols="12"
-                      sm="3"
+                      sm="12"
                   >
-                    <v-text-field
-                        label="День*"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col
-                      cols="12"
-                      sm="3"
-                  >
-                    <v-text-field
-                        label="Месяц*"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col
-                      cols="12"
-                      sm="3"
-                  >
-                    <v-text-field
-                        label="Год*"
-                    ></v-text-field>
+                    <v-menu
+                        ref="menu"
+                        v-model="menu"
+                        :close-on-content-click="false"
+                        :return-value.sync="date"
+                        transition="scale-transition"
+                        offset-y
+                        min-width="auto"
+                    >
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-text-field
+                            v-model="date"
+                            label="Выберите дату регистрации паспорта"
+                            prepend-icon="mdi-calendar"
+                            readonly
+                            v-bind="attrs"
+                            v-on="on"
+                        ></v-text-field>
+                      </template>
+                      <v-date-picker
+                          locale="rus"
+                          v-model="date"
+                          no-title
+                          scrollable
+                      >
+                        <v-spacer></v-spacer>
+                        <v-btn
+                            text
+                            color="primary"
+                            @click="menu = false"
+                        >
+                          Закрыть
+                        </v-btn>
+                        <v-btn
+                            text
+                            color="primary"
+                            @click="$refs.menu.save(date)"
+                        >
+                          ОК
+                        </v-btn>
+                      </v-date-picker>
+                    </v-menu>
                   </v-col>
                 </v-row>
               </v-container>
@@ -119,9 +142,13 @@
 export default {
   name: "UserList",
   data: () => ({
+    initialDate: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
     typedFio: null,
     typedPassSeria: null,
     typedPassNo: null,
+    date: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
+    menu: false,
+    modal: false,
     fioRule: [
       v => !!v || "Это поле обязательно",
       v => ( v && v.trim().split(" ").length === 3 ) || "ФИО должно быть написано корректно"
@@ -147,13 +174,15 @@ export default {
 
   methods: {
     rejectDialog() {
+      console.log(this.date)
+      this.addEmplDialog = false
       //selecting all empInput for clearing input forms
       for (let [key, value] of Object.entries(this.$refs)) {
         if (/^empInput/.test(key)) {
           value.reset()
         }
       }
-      this.addEmplDialog = false
+      this.date = this.initialDate
     },
 
     getSurnameWithInits(emp) {
