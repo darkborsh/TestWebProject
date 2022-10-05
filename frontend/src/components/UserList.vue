@@ -126,6 +126,7 @@
       >
         <v-list-item
           v-for="emp in emps"
+          @click="this.changeCurrentEmpl(emp)"
         >
           <v-list-item-content>
             <v-list-item-title
@@ -140,6 +141,8 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
+
 export default {
   name: "UserList",
   data: () => ({
@@ -173,10 +176,13 @@ export default {
       localStorage.setItem(this.keyStorage, JSON.stringify(this.emps))
     } else {
       this.emps = JSON.parse(localStorage.getItem(this.keyStorage))
+      this.changeCurrentEmpl(this.emps[0])
     }
   },
 
   methods: {
+    vuex:mapActions(['changeCurrentEmpl']),
+
     clearDialog() {
       this.addEmplDialog = false
       //selecting all empInput for clearing input forms
@@ -194,7 +200,6 @@ export default {
         return splitedFio[0] + ' ' + splitedFio[1].charAt(0) + '.' + ' ' + splitedFio[2].charAt(0) + '.'
       } else {
         console.log("Wrong Fio parameters: " + emp.fio)
-        this.selectedItem = null
       }
     },
 

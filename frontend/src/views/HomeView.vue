@@ -4,12 +4,14 @@
 
 <script>
   import UserList from '../components/UserList'
+  import UserContent from '../components/UserContent'
 
   export default {
     name: 'Home',
 
     components: {
-      UserList
+      UserList,
+      UserContent
     },
   }
 </script>
