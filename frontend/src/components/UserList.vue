@@ -125,8 +125,7 @@
         style="margin-top: 5px"
       >
         <v-list-item
-          v-for="emp in emps"
-          @click="this.changeCurrentEmpl(emp)"
+          v-for="emp in allEmpls"
         >
           <v-list-item-content>
             <v-list-item-title
@@ -141,11 +140,24 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
 
 export default {
   name: "UserList",
+
+  watch: {
+    selectedItem (val) {
+      this.$store.dispatch("selectItem", val)
+    }
+  },
+
+  computed: {
+    allEmpls() {
+      return this.$store.getters.getAllEmpls
+    }
+  },
+
   data: () => ({
+    selectedItem: 0,
     keyStorage: "empStorage",
     initialDate: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
     typedFio: null,
@@ -166,23 +178,19 @@ export default {
       v => !!v || "Это поле обязательно",
       v => ( v && new RegExp("^\\d{6}$").test(v) ) || "Номер паспорта должен содержать 6 цифр"
     ],
-    addEmplDialog: false,
-    selectedItem: 0,
-    emps: [],
+    addEmplDialog: false
   }),
 
   created() {
     if (localStorage.getItem(this.keyStorage) === null) {
-      localStorage.setItem(this.keyStorage, JSON.stringify(this.emps))
+      localStorage.setItem(this.keyStorage, JSON.stringify([]))
+      this.$store.dispatch("fetchEmpls", this.keyStorage)
     } else {
-      this.emps = JSON.parse(localStorage.getItem(this.keyStorage))
-      this.changeCurrentEmpl(this.emps[0])
+      this.$store.dispatch("fetchEmpls", this.keyStorage)
     }
   },
 
   methods: {
-    vuex:mapActions(['changeCurrentEmpl']),
-
     clearDialog() {
       this.addEmplDialog = false
       //selecting all empInput for clearing input forms
@@ -208,13 +216,15 @@ export default {
       let correctPassSeria = this.typedPassSeria !== null && this.$refs.empInput2.validate()
       let correctPassNo = this.typedPassNo !== null && this.$refs.empInput3.validate()
       if (correctFio && correctPassSeria && correctPassNo) {
-        this.emps.push({
+        let newEmplArray = this.allEmpls
+        newEmplArray.push({
           fio: this.typedFio,
           passSeria: this.typedPassSeria,
           passNo: this.typedPassNo,
           passDate: this.date
         })
-        localStorage.setItem(this.keyStorage, JSON.stringify(this.emps))
+        localStorage.setItem(this.keyStorage, JSON.stringify(newEmplArray))
+        this.$store.dispatch("fetchEmpls", this.keyStorage)
         this.clearDialog()
       } else {
         console.log("Wrong saving employee data: " + this.typedFio + " " + this.typedPassNo + " " + this.typedPassSeria)
