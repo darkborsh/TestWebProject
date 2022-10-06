@@ -4,18 +4,7 @@ export default {
   state: {
     empls: [],
     selectedItem: 0,
-    fioRule: [
-      v => !!v || "Это поле обязательно",
-      v => ( v && v.trim().split(" ").length === 3 ) || "ФИО должно быть написано корректно"
-    ],
-    passSeriaRule: [
-      v => !!v || "Это поле обязательно",
-      v => ( v && new RegExp("^\\d{4}$").test(v) ) || "Серия паспорта должна содержать 4 цифры"
-    ],
-    passNoRule: [
-      v => !!v || "Это поле обязательно",
-      v => ( v && new RegExp("^\\d{6}$").test(v) ) || "Номер паспорта должен содержать 6 цифр"
-    ]
+    show: true
   },
   getters: {
     getAllEmpls(state) {
@@ -24,18 +13,6 @@ export default {
 
     getEmplById(state) {
       return state.empls[state.selectedItem]
-    },
-
-    getPassSeriaRule(state) {
-      return state.passSeriaRule
-    },
-
-    getPassNoRule(state) {
-      return state.passNoRule
-    },
-
-    getFioRule(state) {
-      return state.fioRule
     },
 
     getSelectedItem(state) {
@@ -68,6 +45,7 @@ export default {
       currentEmplArray.splice(deletingPayload.deletingId, 1);
       localStorage.setItem(deletingPayload.key, JSON.stringify(currentEmplArray))
       ctx.commit("setNewEmpls", currentEmplArray)
+      ctx.commit("updateSelectedItem", -1)
     },
 
     saveEmployee(ctx, savingPayload) {
@@ -91,6 +69,13 @@ export default {
         )
         return false
       }
+    },
+
+    resaveEmployee(ctx, resavingPayload) {
+      let newEmplArray = JSON.parse(localStorage.getItem(resavingPayload.key))
+      newEmplArray[resavingPayload.resavingId] = resavingPayload.resavedEmpl
+      localStorage.setItem(resavingPayload.key, JSON.stringify(newEmplArray))
+      ctx.commit("setNewEmpls", newEmplArray)
     }
   }
 }

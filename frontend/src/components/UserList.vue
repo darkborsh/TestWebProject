@@ -29,7 +29,7 @@
                     <v-text-field
                         v-model="typedFio"
                         label="ФИО (полностью)*"
-                        :rules="this.$store.getters.getFioRule"
+                        :rules="fioRule"
                         ref="empInput1"
                     ></v-text-field>
                   </v-col>
@@ -37,7 +37,7 @@
                     <v-text-field
                         v-model="typedPassSeria"
                         label="Серия паспорта*"
-                        :rules="this.$store.getters.getPassSeriaRule"
+                        :rules="passSeriaRule"
                         ref="empInput2"
                     ></v-text-field>
                   </v-col>
@@ -45,7 +45,7 @@
                     <v-text-field
                         v-model="typedPassNo"
                         label="Номер паспорта*"
-                        :rules="this.$store.getters.getPassNoRule"
+                        :rules="passNoRule"
                         ref="empInput3"
                     ></v-text-field>
                   </v-col>
@@ -166,7 +166,19 @@ export default {
     date: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
     typedFio: null,
     typedPassSeria: null,
-    typedPassNo: null
+    typedPassNo: null,
+    fioRule: [
+      v => !!v || "Это поле обязательно",
+      v => ( v && v.trim().split(" ").length === 3 ) || "ФИО должно быть написано корректно"
+    ],
+    passSeriaRule: [
+      v => !!v || "Это поле обязательно",
+      v => ( v && new RegExp("^\\d{4}$").test(v) ) || "Серия паспорта должна содержать 4 цифры"
+    ],
+    passNoRule: [
+      v => !!v || "Это поле обязательно",
+      v => ( v && new RegExp("^\\d{6}$").test(v) ) || "Номер паспорта должен содержать 6 цифр"
+    ]
   }),
 
   created() {
