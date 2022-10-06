@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 export default {
   state: {
     empls: [],
@@ -59,6 +61,13 @@ export default {
       if (newItem !== null && newItem !== this.state.selectedItem) {
         ctx.commit("updateSelectedItem", newItem)
       }
+    },
+
+    deleteEmployee(ctx, deletingPayload) {
+      let currentEmplArray = JSON.parse(localStorage.getItem(deletingPayload.key))
+      currentEmplArray.splice(deletingPayload.deletingId, 1);
+      localStorage.setItem(deletingPayload.key, JSON.stringify(currentEmplArray))
+      ctx.commit("setNewEmpls", currentEmplArray)
     },
 
     saveEmployee(ctx, savingPayload) {
