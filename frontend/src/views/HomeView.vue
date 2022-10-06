@@ -1,5 +1,8 @@
 <template>
-  <user-list/>
+  <div style="display: flex; height: 100%; width: 100%">
+    <user-list/>
+    <user-content/>
+  </div>
 </template>
 
 <script>
@@ -15,3 +18,5 @@
     },
   }
 </script>
+
+<style scoped/>

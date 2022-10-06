@@ -29,7 +29,7 @@
                     <v-text-field
                         v-model="typedFio"
                         label="ФИО (полностью)*"
-                        :rules="fioRule"
+                        :rules="this.$store.getters.getFioRule"
                         ref="empInput1"
                     ></v-text-field>
                   </v-col>
@@ -37,7 +37,7 @@
                     <v-text-field
                         v-model="typedPassSeria"
                         label="Серия паспорта*"
-                        :rules="passSeriaRule"
+                        :rules="this.$store.getters.getPassSeriaRule"
                         ref="empInput2"
                     ></v-text-field>
                   </v-col>
@@ -45,7 +45,7 @@
                     <v-text-field
                         v-model="typedPassNo"
                         label="Номер паспорта*"
-                        :rules="passNoRule"
+                        :rules="this.$store.getters.getPassNoRule"
                         ref="empInput3"
                     ></v-text-field>
                   </v-col>
@@ -111,7 +111,7 @@
               <v-btn
                   color="blue darken-1"
                   text
-                  @click="saveEmployee"
+                  @click="this.callSaveEmployee"
               >
                 Сохранить
               </v-btn>
@@ -158,27 +158,15 @@ export default {
 
   data: () => ({
     selectedItem: 0,
-    keyStorage: "empStorage",
-    initialDate: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
-    typedFio: null,
-    typedPassSeria: null,
-    typedPassNo: null,
-    date: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
     menu: false,
     modal: false,
-    fioRule: [
-      v => !!v || "Это поле обязательно",
-      v => ( v && v.trim().split(" ").length === 3 ) || "ФИО должно быть написано корректно"
-    ],
-    passSeriaRule: [
-      v => !!v || "Это поле обязательно",
-      v => ( v && new RegExp("^\\d{4}$").test(v) ) || "Серия паспорта должна содержать 4 цифры"
-    ],
-    passNoRule: [
-      v => !!v || "Это поле обязательно",
-      v => ( v && new RegExp("^\\d{6}$").test(v) ) || "Номер паспорта должен содержать 6 цифр"
-    ],
-    addEmplDialog: false
+    addEmplDialog: false,
+    keyStorage: "empStorage",
+    initialDate: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
+    date: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
+    typedFio: null,
+    typedPassSeria: null,
+    typedPassNo: null
   }),
 
   created() {
@@ -211,24 +199,22 @@ export default {
       }
     },
 
-    saveEmployee() {
-      let correctFio = this.typedFio !== null && this.$refs.empInput1.validate()
-      let correctPassSeria = this.typedPassSeria !== null && this.$refs.empInput2.validate()
-      let correctPassNo = this.typedPassNo !== null && this.$refs.empInput3.validate()
-      if (correctFio && correctPassSeria && correctPassNo) {
-        let newEmplArray = this.allEmpls
-        newEmplArray.push({
-          fio: this.typedFio,
-          passSeria: this.typedPassSeria,
-          passNo: this.typedPassNo,
-          passDate: this.date
-        })
-        localStorage.setItem(this.keyStorage, JSON.stringify(newEmplArray))
-        this.$store.dispatch("fetchEmpls", this.keyStorage)
-        this.clearDialog()
-      } else {
-        console.log("Wrong saving employee data: " + this.typedFio + " " + this.typedPassNo + " " + this.typedPassSeria)
+    callSaveEmployee() {
+      let emp = {
+        fio: this.typedFio,
+        passSeria: this.typedPassSeria,
+        passNo: this.typedPassNo,
+        passDate: this.date
       }
+      let inputValidations = {
+        fioValidate: this.$refs.empInput1.validate(),
+        passSeriaValidate: this.$refs.empInput2.validate(),
+        passNoValidate: this.$refs.empInput3.validate()
+      }
+      let key = this.keyStorage
+      this.$store.dispatch("saveEmployee", { key, emp, inputValidations }).then(response => {
+        if (response) this.clearDialog()
+      })
     }
   }
 }
