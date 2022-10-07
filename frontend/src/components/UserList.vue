@@ -1,5 +1,5 @@
 <template>
-  <v-navigation-drawer>
+  <v-navigation-drawer absolute permanent width="15%">
     <v-list>
       <v-subheader style="font-size: 1.2rem; font-weight: bold; user-select: none">Список сотрудников</v-subheader>
       <v-subheader>
@@ -14,6 +14,8 @@
                 dark
                 v-bind="attrs"
                 v-on="on"
+                width="100%"
+                style="font-size: 0.7em"
             >
               Добавить сотрудника
             </v-btn>
@@ -141,6 +143,8 @@
 
 <script>
 
+import dayjs from "dayjs";
+
 export default {
   name: "UserList",
 
@@ -162,8 +166,7 @@ export default {
     modal: false,
     addEmplDialog: false,
     keyStorage: "empStorage",
-    initialDate: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
-    date: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
+    date: dayjs().format('YYYY-MM-DD'),
     typedFio: null,
     typedPassSeria: null,
     typedPassNo: null,
@@ -199,7 +202,7 @@ export default {
           value.reset()
         }
       }
-      this.date = this.initialDate
+      this.date = dayjs().format('YYYY-MM-DD')
     },
 
     getSurnameWithInits(emp) {
