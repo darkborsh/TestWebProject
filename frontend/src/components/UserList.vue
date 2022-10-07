@@ -113,7 +113,7 @@
               <v-btn
                   color="blue darken-1"
                   text
-                  @click="this.callSaveEmployee"
+                  @click="callSaveEmployee"
               >
                 Сохранить
               </v-btn>
@@ -127,11 +127,11 @@
         style="margin-top: 5px"
       >
         <v-list-item
-          v-for="emp in allEmpls"
+          v-for="employee in employees"
         >
           <v-list-item-content>
             <v-list-item-title
-                v-text="getSurnameWithInits(emp)"
+                v-text="getSurnameWithInits(employee)"
             >
             </v-list-item-title>
           </v-list-item-content>
@@ -147,25 +147,20 @@ import dayjs from "dayjs";
 
 export default {
   name: "UserList",
-
-  watch: {
-    selectedItem (val) {
-      this.$store.dispatch("selectItem", val)
+  props: {
+    employee: {
+      fio: String,
+      passSeria: String,
+      passNo: String,
+      passDate: Date
     }
   },
-
-  computed: {
-    allEmpls() {
-      return this.$store.getters.getAllEmpls
-    }
-  },
-
   data: () => ({
+    employees: [],
     selectedItem: 0,
     menu: false,
     modal: false,
     addEmplDialog: false,
-    keyStorage: "empStorage",
     date: dayjs().format('YYYY-MM-DD'),
     typedFio: null,
     typedPassSeria: null,
@@ -185,11 +180,10 @@ export default {
   }),
 
   created() {
-    if (localStorage.getItem(this.keyStorage) === null) {
-      localStorage.setItem(this.keyStorage, JSON.stringify([]))
-      this.$store.dispatch("fetchEmpls", this.keyStorage)
+    if (localStorage.getItem("empStorage") === null) {
+      localStorage.setItem("empStorage", JSON.stringify([]))
     } else {
-      this.$store.dispatch("fetchEmpls", this.keyStorage)
+      this.employees = JSON.parse(localStorage.getItem("empStorage"))
     }
   },
 
@@ -205,12 +199,31 @@ export default {
       this.date = dayjs().format('YYYY-MM-DD')
     },
 
-    getSurnameWithInits(emp) {
-      let splitedFio = emp.fio.split(" ")
+    getSurnameWithInits(employee) {
+      let splitedFio = employee.fio.split(" ")
       if (splitedFio.length === 3) {
         return splitedFio[0] + ' ' + splitedFio[1].charAt(0) + '.' + ' ' + splitedFio[2].charAt(0) + '.'
       } else {
-        console.log("Wrong Fio parameters: " + emp.fio)
+        console.log("Wrong Fio parameters: " + employee.fio)
+      }
+    },
+
+    saveEmployee(emp, inputValidations) {
+      let valid = inputValidations.fioValidate && inputValidations.passSeriaValidate && inputValidations.passNoValidate
+      if (valid) {
+        emp.passDate = dayjs(emp.passDate).format("YYYY-MM-DDThh:mm:ssZ")
+        this.employees.push(emp)
+        localStorage.setItem("empStorage", JSON.stringify(this.employees))
+        this.clearDialog()
+      } else {
+        console.log(
+            "Wrong saving employee data: " +
+            emp.fio +
+            " " +
+            emp.passSeria +
+            " " +
+            emp.passNo
+        )
       }
     },
 
@@ -226,10 +239,7 @@ export default {
         passSeriaValidate: this.$refs.empInput2.validate(),
         passNoValidate: this.$refs.empInput3.validate()
       }
-      let key = this.keyStorage
-      this.$store.dispatch("saveEmployee", { key, emp, inputValidations }).then(response => {
-        if (response) this.clearDialog()
-      })
+      this.saveEmployee(emp, inputValidations)
     }
   }
 }
