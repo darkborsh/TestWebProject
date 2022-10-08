@@ -161,19 +161,21 @@ export default {
   },
 
   watch: {
+    employees() {
+    },
+
     isDeleteCalled() {
       this.deleteEmployee()
     },
 
-    employee(newEmployee) {
-      console.log(newEmployee)
+    employee() {
+      this.resaveEmployee()
     }
   },
 
   data: () => ({
     employees: [],
     selectedItem: 0,
-    trueSelectedItem: 0,
     menu: false,
     modal: false,
     addEmplDialog: false,
@@ -199,8 +201,8 @@ export default {
     if (localStorage.getItem("empStorage") === null) {
       localStorage.setItem("empStorage", JSON.stringify([]))
     } else {
+      this.employees = JSON.parse(localStorage.getItem("empStorage"))
       if (this.employees.length !== 0) {
-        this.employees = JSON.parse(localStorage.getItem("empStorage"))
         this.showEmployee(this.employees[0])
       }
     }
@@ -254,6 +256,12 @@ export default {
       }
     },
 
+    resaveEmployee() {
+      this.employees.splice(this.selectedItem, 1, this.employee)
+      localStorage.setItem("empStorage", JSON.stringify(this.employees))
+      this.showEmployee(this.employees[this.selectedItem])
+    },
+
     callSaveEmployee() {
       let emp = {
         fio: this.typedFio,
@@ -270,6 +278,7 @@ export default {
     },
 
     showEmployee(emp) {
+      if (emp !== null) emp.passDate = dayjs(emp.passDate).format("YYYY-MM-DD")
       this.$emit("showEmployee", emp)
     }
   }
