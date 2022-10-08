@@ -17,7 +17,7 @@
                 width="100%"
                 style="font-size: 0.7em"
             >
-              Добавить сотрудника
+              Добавить
             </v-btn>
           </template>
           <v-card>
