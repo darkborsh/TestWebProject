@@ -1,6 +1,6 @@
 <template>
   <div style="display: flex; height: 100%; width: 100%">
-    <user-list/>
+    <user-list :is-delete-called="isDeleteCalled" :employee="employeeToUpdate" @showEmployee="showEmployee"/>
     <v-main
         style="margin-left: 20%;"
     >
@@ -8,42 +8,40 @@
           justify="center"
           class="text-xs-center"
           width="50%"
-          v-if="this.$store.getters.getSelectedItem >= 0"
+          v-if="employeeToShow !== null"
       >
         <v-card-title>
           Информация о сотруднике
         </v-card-title>
-        <v-subheader v-if="changed">
-          Неверные поля не будут учитываться при сохранении*
-        </v-subheader>
         <v-card-text>
           <v-row>
             <v-col cols="12" style="font-size: 18px; font-weight: bold">
+              ФИО (полностью*) : {{ this.employeeToShow.fio }}
               <v-text-field
                   v-model="inputFio"
                   :rules="fioRule"
                   ref="inputFio"
-                  @change="this.acceptChangingFio"
+                  @change="checkAllInputFields"
               >
               </v-text-field>
             </v-col>
             <v-col cols="12" sm="6" style="font-size: 18px; font-weight: bold">
-              Серия паспорта :
+              Серия паспорта : {{ this.employeeToShow.passSeria }}
               <v-text-field
                   v-model="inputPassSeria"
                   :rules="passSeriaRule"
                   ref="inputPassSeria"
-                  @change="this.acceptChangingSeria"
+                  @change="checkAllInputFields"
               >
               </v-text-field>
             </v-col>
             <v-col cols="12" sm="6" style="font-size: 18px; font-weight: bold">
-              Номер паспорта :
+              Номер паспорта : {{ this.employeeToShow.passNo }}
               <v-text-field
                   v-model="inputPassNo"
                   :rules="passNoRule"
                   ref="inputPassNo"
-                  @change="this.acceptChangingNo"
+                  @change="checkAllInputFields"
               >
               </v-text-field>
             </v-col>
@@ -52,7 +50,7 @@
                 sm="12"
                 style="font-size: 18px; font-weight: bold"
             >
-              Дата регистрации паспорта :
+              Дата регистрации паспорта : {{ this.employeeToShow.passDate }}
               <v-menu
                   ref="menu"
                   v-model="menu"
@@ -69,6 +67,8 @@
                       readonly
                       v-bind="attrs"
                       v-on="on"
+                      clearable
+                      @click:clear="clearDate"
                   >
                   </v-text-field>
                 </template>
@@ -100,7 +100,7 @@
               <v-btn
                   color="pink"
                   class="white--text"
-                  @click="this.callDeleteEmployee"
+                  @click="callChildsDeteleMethod"
               >
                 Удалить
               </v-btn>
@@ -109,7 +109,7 @@
                   color="green"
                   class="white--text"
                   :disabled="!changed"
-                  @click="callResaveEmployee"
+                  @click="callUpdateEmployee"
               >
                 Сохранить
               </v-btn>
@@ -122,6 +122,7 @@
 </template>
 
 <script>
+  import dayjs from "dayjs";
   import UserList from '../components/UserList'
 
   export default {
@@ -130,6 +131,94 @@
     components: {
       UserList
     },
+
+    data: () => ({
+      isDeleteCalled: false,
+      employeeToShow: null,
+      employeeToUpdate: null,
+      menu: false,
+      modal: false,
+      date: null,
+      changed: false,
+      inputFio: "",
+      inputPassSeria: "",
+      inputPassNo: "",
+      correctFio: false,
+      correctNo: false,
+      correctSeria: false,
+      fioRule: [
+        v => ( v && v.trim().split(" ").length === 3 ) || "ФИО должно быть написано корректно"
+      ],
+      passSeriaRule: [
+        v => ( v && new RegExp("^\\d{4}$").test(v) ) || "Серия паспорта должна содержать 4 цифры"
+      ],
+      passNoRule: [
+        v => ( v && new RegExp("^\\d{6}$").test(v) ) || "Номер паспорта должен содержать 6 цифр"
+      ]
+    }),
+
+    methods: {
+      showEmployee(emp) {
+        this.employeeToShow = emp
+      },
+
+      callChildsDeteleMethod() {
+        this.isDeleteCalled = !this.isDeleteCalled
+      },
+
+      saveDate() {
+        this.$refs.menu.save(this.date)
+        this.checkAllInputFields()
+      },
+
+      clearDate() {
+        this.date = null
+        this.checkAllInputFields()
+      },
+
+      checkAllInputFields() {
+        let isEmptyFio = this.inputFio === ""
+        let isEmptySeria = this.inputPassSeria === ""
+        let isEmptyNo = this.inputPassNo === ""
+        this.changed =
+            (this.$refs.inputFio.validate() || isEmptyFio) &&
+            (this.$refs.inputPassNo.validate() || isEmptyNo) &&
+            (this.$refs.inputPassSeria.validate() || isEmptySeria)
+        if (isEmptyFio) {
+          this.$refs.inputFio.reset()
+          this.inputFio = ""
+        }
+        if (isEmptySeria) {
+          this.$refs.inputPassSeria.reset()
+          this.inputPassSeria = ""
+        }
+        if (isEmptyNo) {
+          this.$refs.inputPassNo.reset()
+          this.inputPassNo = ""
+        }
+        if (isEmptyFio && isEmptySeria && isEmptyNo && this.date === null) {
+          this.changed = false
+        }
+      },
+
+      callUpdateEmployee() {
+        let fio = this.inputFio
+        if (fio === "") fio = this.employeeToShow.fio
+        let passSeria = this.inputPassSeria
+        if (passSeria === "") passSeria = this.employeeToShow.passSeria
+        let passNo = this.inputPassNo
+        if (passNo === "") passNo = this.employeeToShow.passNo
+        let passDate = this.date
+        if (passDate === null) passDate = this.employeeToShow.passDate
+        else passDate = dayjs(this.date).format("YYYY-MM-DDThh:mm:ssZ")
+        this.employeeToUpdate = {
+          fio: fio,
+          passSeria: passSeria,
+          passNo: passNo,
+          passDate: passDate
+        }
+      }
+    }
   }
 </script>
 
