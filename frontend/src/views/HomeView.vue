@@ -209,7 +209,7 @@
         let passNo = this.inputPassNo
         if (passNo === "") passNo = this.employeeToShow.passNo
         let passDate = this.date
-        if (passDate === null) passDate = this.employeeToShow.passDate
+        if (passDate === null) passDate = dayjs(this.employeeToShow.passDate).format("YYYY-MM-DDThh:mm:ssZ")
         else passDate = dayjs(this.date).format("YYYY-MM-DDThh:mm:ssZ")
         this.employeeToUpdate = {
           fio: fio,
