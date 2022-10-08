@@ -128,6 +128,7 @@
       >
         <v-list-item
           v-for="employee in employees"
+          @click="showEmployee(employee)"
         >
           <v-list-item-content>
             <v-list-item-title
@@ -148,6 +149,9 @@ import dayjs from "dayjs";
 export default {
   name: "UserList",
   props: {
+    isDeleteCalled: {
+      value: Boolean
+    },
     employee: {
       fio: String,
       passSeria: String,
@@ -155,9 +159,21 @@ export default {
       passDate: Date
     }
   },
+
+  watch: {
+    isDeleteCalled() {
+      this.deleteEmployee()
+    },
+
+    employee(newEmployee) {
+      console.log(newEmployee)
+    }
+  },
+
   data: () => ({
     employees: [],
     selectedItem: 0,
+    trueSelectedItem: 0,
     menu: false,
     modal: false,
     addEmplDialog: false,
@@ -183,7 +199,10 @@ export default {
     if (localStorage.getItem("empStorage") === null) {
       localStorage.setItem("empStorage", JSON.stringify([]))
     } else {
-      this.employees = JSON.parse(localStorage.getItem("empStorage"))
+      if (this.employees.length !== 0) {
+        this.employees = JSON.parse(localStorage.getItem("empStorage"))
+        this.showEmployee(this.employees[0])
+      }
     }
   },
 
@@ -208,6 +227,13 @@ export default {
       }
     },
 
+    deleteEmployee() {
+      this.employees.splice(this.selectedItem, 1)
+      localStorage.setItem("empStorage", JSON.stringify(this.employees))
+      this.selectedItem = null
+      this.showEmployee(null)
+    },
+
     saveEmployee(emp, inputValidations) {
       let valid = inputValidations.fioValidate && inputValidations.passSeriaValidate && inputValidations.passNoValidate
       if (valid) {
@@ -215,6 +241,7 @@ export default {
         this.employees.push(emp)
         localStorage.setItem("empStorage", JSON.stringify(this.employees))
         this.clearDialog()
+        if (this.selectedItem === 0) this.showEmployee(this.employees[this.selectedItem])
       } else {
         console.log(
             "Wrong saving employee data: " +
@@ -240,6 +267,10 @@ export default {
         passNoValidate: this.$refs.empInput3.validate()
       }
       this.saveEmployee(emp, inputValidations)
+    },
+
+    showEmployee(emp) {
+      this.$emit("showEmployee", emp)
     }
   }
 }
